@@ -35,7 +35,13 @@ This is a sample eCommerce website that includes:
 ### Priority Group 1
 
 1. **Search bar issue when searching for a product**
+
    - I get an error having to due with '`next/image` Un-configured Host' whenever I am searching for a product in the search bar. Reading the docs it seems the inital root cause you need to check for has to do with "One of your pages that leverages the next/image component, passed a src value that uses a hostname in the URL that isn't defined in the images.remotePatterns in next.config.js".
+   - **Fix implemented**
+     - The root issue was the images path url was trying to access an image from the "images-na.ssl-images-amazon.com" hostname, however this dependecy was not added into the next.onfig.ts file. After adding another hostname entry into the remotePatterns area, this problem was resolved.
+   - **Reason for approach**
+     - I hadn't seen and issue or bug like this before. I took a few minutes to read the documentation that Next.js provided to help better assess the issue or potential cause of the issue. After figuring out what the problem was, it was quite simple to implement the fix, by adding another hostname entry in remotePatterns.
+
 2. **Clear Filter Bug**
    - ## Whenever you press the clear filter button, it clear subcategories properly, however it will not clear out the initial category you have selected.
 
