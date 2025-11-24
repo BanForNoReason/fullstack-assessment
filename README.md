@@ -34,7 +34,7 @@ This is a sample eCommerce website that includes:
 
 ### Priority Group 1
 
-1. **Search bar issue when searching for a product**
+1. **Search bar issue when searching for an 'apple' product (Bug)** (completed)
 
    - I get an error having to due with '`next/image` Un-configured Host' whenever I am searching for a product in the search bar. Reading the docs it seems the inital root cause you need to check for has to do with "One of your pages that leverages the next/image component, passed a src value that uses a hostname in the URL that isn't defined in the images.remotePatterns in next.config.js".
    - **Fix implemented**
@@ -42,12 +42,12 @@ This is a sample eCommerce website that includes:
    - **Reason for approach**
      - I hadn't seen and issue or bug like this before. I took a few minutes to read the documentation that Next.js provided to help better assess the issue or potential cause of the issue. After figuring out what the problem was, it was quite simple to implement the fix, by adding another hostname entry in remotePatterns.
 
-2. **Clear Filter Bug**
+2. **Clear Filter (Bug)** (currently working on)
    - ## Whenever you press the clear filter button, it clear subcategories properly, however it will not clear out the initial category you have selected.
 
 ### Priority Group 2
 
-3. **UX Design Flaw**
+3. **UX Design Flaw (UX Flaw)** (not-complete)
    - The View Details Buttons aren't the same across different products. if a product has more product tags for the filter, then it will cause the button to be lower, or higher if less tags.
-4. **Duplicate Same items**
+4. **Duplicate Same items (Potential UX Flaw)** (not completed)
    - There are a few items that have the exact same information, and exact same Titles etc... need to check out what is causing these issues to appear first.
