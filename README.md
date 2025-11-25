@@ -32,33 +32,59 @@ This is a sample eCommerce website that includes:
 
 ### Priority Group 1
 
-1. **Search bar issue when searching for an "apple" product (Bug)** (completed)
+1. **Search bar error when looking up an "apple" product (Bug)** (completed)
 
-   - I get an error related to `next/image` saying the host is not configured whenever I search for a product in the search bar. From the docs, the root cause is that a page using the `next/image` component is passing a `src` URL whose hostname isn’t defined in `images.remotePatterns` in `next.config.ts`.
+   - When I tried searching for certain products (like anything “apple” related), I was getting a `next/image` error saying the host wasn’t configured. After checking the docs, I realized the page using `next/image` was pulling an image from a URL whose hostname wasn’t included in `images.remotePatterns` in `next.config.ts`.
    - **Fix implementation**
-     - The image URL was trying to load from the `images-na.ssl-images-amazon.com` hostname, but this host wasn’t listed in `next.config.ts`. I added a second `remotePatterns` entry for that hostname, and the error went away.
-   - **Reason for Approach**
-     - I hadn’t run into this specific bug before, so I took a few minutes to read the Next.js docs to understand what the error was actually saying. Once I understood that it was just a missing allowed host, the fix was straightforward: explicitly whitelist the additional image domain in `remotePatterns`.
+
+     - The image URL was coming from `images-na.ssl-images-amazon.com`, but that hostname wasn’t in `next.config.ts` at all. I added a second `remotePatterns` entry for that domain, saved it, and the error disappeared.
+
+   - **Reason for approach**
+
+     - I hadn’t hit this exact error before, so I paused and read through the Next.js docs instead of just randomly changing things. Once it clicked that the problem was simply an unlisted host, the fix was basically just “tell Next.js this domain is allowed.” Adding the extra domain into `remotePatterns` keeps it explicit and easy to update later if more image hosts show up.
 
 2. **Clear Filters behavior + Select warning (Bug)** (completed)
-   - When you press the Clear Filters button, it clears the subcategory correctly, but it does not clear out the main category you originally selected. At the same time, the dev console shows a warning about the select “changing from uncontrolled to controlled.”
+
+   - When I clicked Clear Filters, it reset the subcategory, but the main category stayed selected, which felt off. On top of that, the console was yelling about the select “changing from uncontrolled to controlled,” which pointed to a state issue.
    - **Fix implementation**
-     - I noticed that every time the filter was used and reset, the console warning about “changing from uncontrolled to controlled” appeared, which pointed to a state management issue. On the first render the Select value was `undefined` (uncontrolled), and later it became a string (controlled), causing the warning and also leaving the main category stuck so you couldn’t re-select the same option. I changed the default state for both category and subcategory to use an empty string (`""`) instead of `undefined`, and I made Clear Filters reset both values back to `""`. In the effects, `""` is treated as a falsy “no filter” state, so no category is applied when filters are cleared.
-   - **Reason for Approach**
-     - It isn’t a good habit to leave something in an undefined state, because bugs like this can slip through and only show up in specific flows. By keeping the Select components fully controlled for their entire lifecycle (using `""` as the explicit “no selection” value), I get a consistent “no filter” state that can be reliably reset, and the warning goes away.
+
+     - I noticed the Select value started out as `undefined` on the first render (uncontrolled) and then later became a string (controlled). That’s what triggered the warning and also made it impossible to re-select the same category, because the state wasn’t behaving consistently. I changed the default state for both `category` and `subCategory` to `""` instead of `undefined`, and I wired Clear Filters to set both back to `""`. In the logic, `""` is treated as “no filter,” so when filters are cleared, nothing is applied.
+
+   - **Reason for approach**
+
+     - Leaving things as `undefined` is usually asking for subtle bugs like this, especially with controlled components. By keeping the Select fully controlled from the beginning and using `""` as the explicit “no selection” state, I get predictable behavior: Clear Filters actually clears everything, the user can re-select options, and the React warning disappears.
+
+---
 
 ### Priority Group 2
 
-3. **UX Layout Flaw (completed)**
-   - The “View Details” buttons weren’t aligned across products. If a product had more tags, its card got taller and the button sat lower than cards with fewer tags.
+3. **Product card layout / button alignment (UX issue)** (completed)
+
+   - The “View Details” buttons weren’t lining up across all product cards. If a product had more tags, its card got taller and the button ended up lower than the others, which made the grid look a bit messy.
    - **Fix implementation**
-     - I updated the product grid to stretch all items to the same height and made each `Card` fill its grid cell (`items-stretch`, `h-full` on the link and card).
-     - For the `CardFooter`, I added the `mt-auto` class so, since the card is already `flex flex-col`, `margin-top: auto` pushes the footer down to the bottom of the card, away from the content above.
-   - **Reason for Approach**
-     - This keeps the cards visually consistent and guarantees that every “View Details” button sits at the bottom of its card, regardless of how many tags or how much content each product has. It’s a small change, but it makes the grid look cleaner and easier to scan for users.
-4. **Duplicate Same items (Potential UX Flaw)** (not completed)
 
-   - There are a few items that have the exact same information, and exact same Titles etc... need to check out what is causing these issues to appear first.
+     - I updated the product grid so that all items stretch to the same height and each `Card` fills its grid cell (`items-stretch` plus `h-full` on the link and card).
+     - Since the card is already `flex flex-col`, I added `mt-auto` on the `CardFooter`. That pushes the footer to the bottom of the card, no matter how much content is above it.
 
-5. **Change the StackShop Title to be a Homepage link**
-   - For the user it is inconvient to have to clear out the search to go to the "main" page, so thinking of making the main header in the nav to be a responsive '/...' home link (not sure yet).
+   - **Reason for approach**
+
+     - This keeps the cards visually consistent and makes the grid easier to scan. No matter how many tags or lines of text a product has, the “View Details” button should always sit at the bottom of the card, which just feels cleaner and more intentional from a UX perspective.
+
+4. **Largest Contentful Paint image warning (Performance)** (completed)
+
+   - Next.js was warning that one of the product images (from `m.media-amazon.com`) was being flagged as the Largest Contentful Paint (LCP) element and suggested using the `priority` prop if that image is above the fold. In this layout, the first product card’s image is basically the main above-the-fold visual on the page.
+   - **Fix implementation**
+
+     - Inside the `products.map(...)`, I used the `index` from the `.map` and passed `priority={index === 0}` to the `Image` component. That way only the first product image—the one you actually see immediately—is marked as high priority, and the rest of the images load normally.
+
+   - **Reason for approach**
+
+     - I didn’t want to mark every product image as `priority`, because that would preload a bunch of images and could backfire on performance. Targeting just the first, above-the-fold image follows Next.js’ recommendation, improves LCP where it actually matters, and keeps the rest of the grid lightweight.
+
+---
+
+### Potential Features / Suggestions
+
+**Make the “StackShop” title link back to the homepage (Suggestion)**
+
+- Right now, the title doesn’t take you anywhere, which might be intentional, so I didn’t change it. That said, most users naturally expect the main logo/title (“StackShop”) to act as a quick way back to the homepage. Making it clickable and routing it back home would line up with common UX patterns and make navigation feel more intuitive when you’re jumping between different pages.
