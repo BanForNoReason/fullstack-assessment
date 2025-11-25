@@ -154,7 +154,7 @@ export default function Home() {
             <p className="text-sm text-muted-foreground mb-4">
               Showing {products.length} products
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-stretch">
               {products.map((product) => (
                 <Link
                   key={product.stacklineSku}
@@ -162,6 +162,7 @@ export default function Home() {
                     pathname: "/product",
                     query: { product: JSON.stringify(product) },
                   }}
+                  className="block h-full"
                 >
                   <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer">
                     <CardHeader className="p-0">
@@ -190,7 +191,7 @@ export default function Home() {
                         </Badge>
                       </CardDescription>
                     </CardContent>
-                    <CardFooter>
+                    <CardFooter className="mt-auto">
                       <Button variant="outline" className="w-full">
                         View Details
                       </Button>
